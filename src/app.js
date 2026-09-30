@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import ApiError from "./error/apiError.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
+import authRoutes from "./modules/auth/auth.routes.js";
 
 dotenv.config();
 
@@ -18,8 +19,8 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Server is healthy and running" });
 });
 
-// Mount module routes here (e.g. auth, user, content, projects)
-// app.use("/api/auth", authRoutes);
+// Mount module routes
+app.use("/api/auth", authRoutes);
 
 // Catch 404 for undefined routes
 app.use((req, res, next) => {
