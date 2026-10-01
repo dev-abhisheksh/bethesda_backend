@@ -11,7 +11,7 @@ const cookieOptions = {
 };
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || "default_jwt_secret", {
+    return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET , {
         expiresIn: "7d"
     });
 };
@@ -29,9 +29,9 @@ const registerUser = asyncHandler(async (req, res) => {
         password
     });
 
-    const token = generateToken(newUser._id);
+    const accessToken = generateToken(newUser._id);
 
-    res.cookie("token", token, cookieOptions).status(201).json({
+    res.cookie("accessToken", accessToken, cookieOptions).status(201).json({
         success: true,
         message: "User registered successfully",
         user: {
@@ -40,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
             email: newUser.email,
             role: newUser.role
         },
-        token
+        accessToken
     });
 });
 
@@ -54,9 +54,9 @@ const loginUser = asyncHandler(async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw new ApiError(400, "Invalid credentials");
 
-    const token = generateToken(user._id);
+    const accessToken = generateToken(user._id);
 
-    res.cookie("token", token, cookieOptions).status(200).json({
+    res.cookie("accessToken", accessToken, cookieOptions).status(200).json({
         success: true,
         message: "Logged in successfully",
         user: {
@@ -65,12 +65,14 @@ const loginUser = asyncHandler(async (req, res) => {
             email: user.email,
             role: user.role
         },
-        token
+        accessToken
     });
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    res.clearCookie("token", cookieOptions).status(200).json({
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("token", cookieOptions);
+    res.status(200).json({
         success: true,
         message: "Logged out successfully"
     });
