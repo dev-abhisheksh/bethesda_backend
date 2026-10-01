@@ -6,6 +6,7 @@ import errorMiddleware from "./middlewares/error.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import uploadRoutes from "./modules/upload/upload.route.js"
 import projectRoutes from "./modules/project/project.routes.js";
+import contentRoutes from "./modules/content/content.routes.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/projects", projectRoutes);
+app.use("/api/content", contentRoutes);
 
 // Catch 404 for undefined routes
 app.use((req, res, next) => {
