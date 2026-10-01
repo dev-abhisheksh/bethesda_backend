@@ -1,6 +1,7 @@
 import Project from "./project.model.js";
 import ApiError from "../../error/apiError.js";
 import asyncHandler from "../../error/asyncHandler.js";
+import { uploadToCloudinary } from "../../config/cloudinary.js";
 
 // @desc    Get all active projects (ordered)
 // @route   GET /api/projects
@@ -88,10 +89,41 @@ const deleteProject = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Upload & add a photo directly to project gallery (Admin only)
+// @route   POST /api/projects/:id/photos
+const addProjectPhoto = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!req.file) throw new ApiError(400, "Please select an image file to upload");
+
+    const project = await Project.findById(id);
+    if (!project) throw new ApiError(404, "Project not found");
+
+    const result = await uploadToCloudinary(req.file.buffer);
+
+    project.photos.push({
+        url: result.secure_url,
+        publicId: result.public_id,
+    });
+
+    await project.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Photo uploaded and added to project successfully",
+        photo: {
+            url: result.secure_url,
+            publicId: result.public_id,
+        },
+        project,
+    });
+});
+
 export {
     getAllProjects,
     getProjectById,
     createProject,
     updateProject,
     deleteProject,
+    addProjectPhoto,
 };
