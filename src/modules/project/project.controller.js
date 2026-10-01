@@ -1,7 +1,7 @@
 import Project from "./project.model.js";
 import ApiError from "../../error/apiError.js";
 import asyncHandler from "../../error/asyncHandler.js";
-import { uploadToCloudinary } from "../../config/cloudinary.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../../config/cloudinary.js";
 
 // @desc    Get all active projects (ordered)
 // @route   GET /api/projects
@@ -62,7 +62,7 @@ const updateProject = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const project = await Project.findByIdAndUpdate(id, req.body, {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
     });
 

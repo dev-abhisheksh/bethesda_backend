@@ -46,7 +46,7 @@ const updateContentByKey = asyncHandler(async (req, res) => {
     const updatedContent = await Content.findOneAndUpdate(
         { key: key.toLowerCase() },
         { key: key.toLowerCase(), data },
-        { new: true, upsert: true, runValidators: true }
+        { returnDocument: "after", upsert: true, runValidators: true }
     );
 
     res.status(200).json({
