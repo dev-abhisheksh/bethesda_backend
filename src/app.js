@@ -13,10 +13,32 @@ dotenv.config();
 
 const app = express();
 
-// Cross-Origin Resource Sharing (CORS) with cookies enabled
+// Trust reverse proxy (Essential for Render and secure cross-origin cookies)
+app.set("trust proxy", 1);
+
+// Allowed origins for CORS (Production Vercel + Preview branches + Local dev)
+const allowedOrigins = [
+  "https://bethesdademo.vercel.app",
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow server-to-server or tools with no origin
+      if (!origin) return callback(null, true);
+      // Allow exact matches or any Vercel preview domain (*.vercel.app)
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS error: origin ${origin} is not allowed`));
+    },
     credentials: true,
   })
 );
@@ -26,7 +48,15 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
 
-// Health Check Route
+// Root & Health Check Routes (For Render health checks and verification)
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Bethesda Charitable Trust API is running smoothly",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Server is healthy and running" });
 });
