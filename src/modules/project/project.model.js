@@ -44,6 +44,11 @@ const projectSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        mediaMode: {
+            type: String,
+            enum: ["carousel", "static"],
+            default: "carousel",
+        },
     },
     { timestamps: true }
 );
