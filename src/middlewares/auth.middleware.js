@@ -10,7 +10,7 @@ const verifyToken = asyncHandler(async (req, res, next) => {
         token = req.headers.authorization.startsWith("Bearer ")
             ? req.headers.authorization.split(" ")[1]
             : req.headers.authorization;
-    } a
+    }
 
     if (!token) {
         throw new ApiError(401, "No token provided. Please log in");
