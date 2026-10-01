@@ -5,6 +5,7 @@ import ApiError from "./error/apiError.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import uploadRoutes from "./modules/upload/upload.route.js"
+import projectRoutes from "./modules/project/project.routes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get("/api/health", (req, res) => {
 // Mount module routes
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/projects", projectRoutes);
 
 // Catch 404 for undefined routes
 app.use((req, res, next) => {
