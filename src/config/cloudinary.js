@@ -23,4 +23,10 @@ export const uploadToCloudinary = (fileBuffer, folder = "bethesda") => {
     });
 };
 
+// Delete image from Cloudinary by public ID
+export const deleteFromCloudinary = async (publicId) => {
+    if (!publicId) return;
+    return await cloudinary.uploader.destroy(publicId);
+};
+
 export default cloudinary;

@@ -119,6 +119,35 @@ const addProjectPhoto = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Delete photo from project gallery (Admin only)
+// @route   DELETE /api/projects/:id/photos/:photoId
+const deleteProjectPhoto = asyncHandler(async (req, res) => {
+    const { id, photoId } = req.params;
+
+    const project = await Project.findById(id);
+    if (!project) throw new ApiError(404, "Project not found");
+
+    const photo = project.photos.id(photoId);
+    if (!photo) throw new ApiError(404, "Photo not found in project");
+
+    if (photo.publicId) {
+        try {
+            await deleteFromCloudinary(photo.publicId);
+        } catch (err) {
+            console.error("Failed to delete from Cloudinary:", err);
+        }
+    }
+
+    project.photos.pull({ _id: photoId });
+    await project.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Photo deleted successfully",
+        project,
+    });
+});
+
 export {
     getAllProjects,
     getProjectById,
@@ -126,4 +155,5 @@ export {
     updateProject,
     deleteProject,
     addProjectPhoto,
+    deleteProjectPhoto,
 };
