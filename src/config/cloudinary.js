@@ -9,4 +9,18 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
+// Upload buffer directly to "bethesda" folder in Cloudinary
+export const uploadToCloudinary = (fileBuffer, folder = "bethesda") => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder, resource_type: "image" },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+        stream.end(fileBuffer);
+    });
+};
+
 export default cloudinary;
