@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import dotenv from "dotenv";
 import ApiError from "./error/apiError.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
@@ -11,6 +12,14 @@ import contentRoutes from "./modules/content/content.routes.js";
 dotenv.config();
 
 const app = express();
+
+// Cross-Origin Resource Sharing (CORS) with cookies enabled
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 // Core Body Parsers & Middlewares
 app.use(express.json({ limit: "16kb" }));
