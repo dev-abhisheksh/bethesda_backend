@@ -43,9 +43,9 @@ app.use(
   })
 );
 
-// Core Body Parsers & Middlewares
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+// Core Body Parsers & Middlewares (Set to 25mb for CMS content and image payloads)
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(cookieParser());
 
 // Root & Health Check Routes (For Render health checks and verification)
