@@ -9,13 +9,20 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-// Upload buffer directly to "bethesda" folder in Cloudinary
+// Upload buffer directly to "bethesda" folder in Cloudinary with auto format/compression
 export const uploadToCloudinary = (fileBuffer, folder = "bethesda") => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
             { folder, resource_type: "image" },
             (error, result) => {
                 if (error) return reject(error);
+                if (result && result.secure_url) {
+                    // Inject Cloudinary dynamic auto format (WebP/AVIF) and quality compression
+                    result.secure_url = result.secure_url.replace(
+                        "/upload/",
+                        "/upload/f_auto,q_auto/"
+                    );
+                }
                 resolve(result);
             }
         );
