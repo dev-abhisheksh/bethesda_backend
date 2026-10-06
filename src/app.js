@@ -9,6 +9,7 @@ import uploadRoutes from "./modules/upload/upload.route.js"
 import projectRoutes from "./modules/project/project.routes.js";
 import contentRoutes from "./modules/content/content.routes.js";
 import heroRoutes from "./modules/hero/hero.routes.js";
+import specialProjectRoutes from "./modules/specialProject/specialProject.routes.js";
 
 dotenv.config();
 
@@ -68,6 +69,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/hero", heroRoutes);
+app.use("/api/special-projects", specialProjectRoutes);
 
 
 // Catch 404 for undefined routes
