@@ -20,8 +20,8 @@ router.post("/", verifyToken, verifyAdmin, createSpecialProject);
 router.put("/:id", verifyToken, verifyAdmin, updateSpecialProject);
 router.delete("/:id", verifyToken, verifyAdmin, deleteSpecialProject);
 
-// Photo upload & delete (Admin only)
-router.post("/:id/photos", verifyToken, verifyAdmin, upload.single("image"), addSpecialProjectPhoto);
+// Photo upload & delete (Admin only - supports single & multi upload)
+router.post("/:id/photos", verifyToken, verifyAdmin, upload.any(), addSpecialProjectPhoto);
 router.delete("/:id/photos/:photoId", verifyToken, verifyAdmin, deleteSpecialProjectPhoto);
 
 export default router;

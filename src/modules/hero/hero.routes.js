@@ -19,7 +19,7 @@ router.post(
   "/:page/photos",
   verifyToken,
   verifyAdmin,
-  upload.single("image"),
+  upload.any(),
   uploadHeroPhoto
 );
 router.delete(

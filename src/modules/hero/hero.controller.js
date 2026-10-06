@@ -38,32 +38,45 @@ export const updateHero = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Upload a new photo to a page's hero carousel (Admin)
+// @desc    Upload photo(s) to a page's hero carousel (Admin, supports multi-upload)
 // @route   POST /api/hero/:page/photos
 export const uploadHeroPhoto = asyncHandler(async (req, res) => {
   const page = req.params.page.toLowerCase();
+  const files = (req.files && req.files.length > 0) ? req.files : (req.file ? [req.file] : []);
 
-  if (!req.file) {
-    throw new ApiError(400, "Image file is required");
+  if (!files.length) {
+    throw new ApiError(400, "Please select at least one image file");
   }
 
-  const uploadResult = await uploadToCloudinary(req.file.buffer, "bethesda/hero");
+  const results = await Promise.allSettled(
+    files.map((file) => uploadToCloudinary(file.buffer, "bethesda/hero"))
+  );
+
+  const successfulUploads = results
+    .filter((r) => r.status === "fulfilled" && r.value?.secure_url)
+    .map((r) => ({
+      url: r.value.secure_url,
+      publicId: r.value.public_id,
+    }));
+
+  if (successfulUploads.length === 0) {
+    const firstError = results.find((r) => r.status === "rejected")?.reason;
+    throw new ApiError(500, firstError?.message || "Failed to upload images");
+  }
 
   let hero = await Hero.findOne({ page });
   if (!hero) {
     hero = new Hero({ page, photos: [] });
   }
 
-  hero.photos.push({
-    url: uploadResult.secure_url,
-    publicId: uploadResult.public_id,
-  });
-
+  hero.photos.push(...successfulUploads);
   await hero.save();
 
   res.status(200).json({
     success: true,
-    message: "Photo uploaded to hero carousel",
+    message: `${successfulUploads.length} photo${successfulUploads.length > 1 ? "s" : ""} uploaded to hero carousel`,
+    photos: successfulUploads,
+    photo: successfulUploads[0],
     hero,
   });
 });

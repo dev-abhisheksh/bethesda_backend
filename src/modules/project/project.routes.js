@@ -22,8 +22,8 @@ router.post("/", verifyToken, verifyAdmin, createProject);
 router.put("/:id", verifyToken, verifyAdmin, updateProject);
 router.delete("/:id", verifyToken, verifyAdmin, deleteProject);
 
-// Project Gallery Photo Routes (Admin only)
-router.post("/:id/photos", verifyToken, verifyAdmin, upload.single("image"), addProjectPhoto);
+// Project Gallery Photo Routes (Admin only - supports single & multi upload)
+router.post("/:id/photos", verifyToken, verifyAdmin, upload.any(), addProjectPhoto);
 router.delete("/:id/photos/:photoId", verifyToken, verifyAdmin, deleteProjectPhoto);
 
 export default router;

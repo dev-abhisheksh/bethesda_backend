@@ -8,6 +8,6 @@ const router = express.Router();
 router.use(verifyToken)
 router.use(verifyAdmin);
 
-router.post("/", upload.single("image"), uploadImages);
+router.post("/", upload.any(), uploadImages);
 
 export default router;

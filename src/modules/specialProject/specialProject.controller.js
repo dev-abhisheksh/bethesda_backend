@@ -82,27 +82,42 @@ const updateSpecialProject = asyncHandler(async (req, res) => {
     res.status(200).json({ success: true, project });
 });
 
-// @desc    Upload photo to special project (Admin only)
+// @desc    Upload photo(s) to special project (Admin only, supports multi-upload)
 // @route   POST /api/special-projects/:id/photos
 const addSpecialProjectPhoto = asyncHandler(async (req, res) => {
-    if (!req.file) throw new ApiError(400, "Please select an image file");
+    const files = (req.files && req.files.length > 0) ? req.files : (req.file ? [req.file] : []);
+
+    if (!files.length) {
+        throw new ApiError(400, "Please select at least one image file");
+    }
 
     const project = await findProject(req.params.id);
     if (!project) throw new ApiError(404, "Special project not found");
 
-    const result = await uploadToCloudinary(req.file.buffer, "bethesda/special-projects");
+    const results = await Promise.allSettled(
+        files.map((file) => uploadToCloudinary(file.buffer, "bethesda/special-projects"))
+    );
 
-    project.photos.push({
-        url: result.secure_url,
-        publicId: result.public_id,
-    });
+    const successfulUploads = results
+        .filter((r) => r.status === "fulfilled" && r.value?.secure_url)
+        .map((r) => ({
+            url: r.value.secure_url,
+            publicId: r.value.public_id,
+        }));
 
+    if (successfulUploads.length === 0) {
+        const firstError = results.find((r) => r.status === "rejected")?.reason;
+        throw new ApiError(500, firstError?.message || "Failed to upload images");
+    }
+
+    project.photos.push(...successfulUploads);
     await project.save();
 
     res.status(200).json({
         success: true,
-        message: "Photo uploaded successfully",
-        photo: { url: result.secure_url, publicId: result.public_id },
+        message: `${successfulUploads.length} photo${successfulUploads.length > 1 ? "s" : ""} uploaded successfully`,
+        photos: successfulUploads,
+        photo: successfulUploads[0],
         project,
     });
 });

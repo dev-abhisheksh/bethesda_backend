@@ -89,32 +89,43 @@ const deleteProject = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Upload & add a photo directly to project gallery (Admin only)
+// @desc    Upload & add photo(s) directly to project gallery (Admin only, supports multi-upload)
 // @route   POST /api/projects/:id/photos
 const addProjectPhoto = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const files = (req.files && req.files.length > 0) ? req.files : (req.file ? [req.file] : []);
 
-    if (!req.file) throw new ApiError(400, "Please select an image file to upload");
+    if (!files.length) {
+        throw new ApiError(400, "Please select at least one image file to upload");
+    }
 
     const project = await Project.findById(id);
     if (!project) throw new ApiError(404, "Project not found");
 
-    const result = await uploadToCloudinary(req.file.buffer);
+    const results = await Promise.allSettled(
+        files.map((file) => uploadToCloudinary(file.buffer, "bethesda/projects"))
+    );
 
-    project.photos.push({
-        url: result.secure_url,
-        publicId: result.public_id,
-    });
+    const successfulUploads = results
+        .filter((r) => r.status === "fulfilled" && r.value?.secure_url)
+        .map((r) => ({
+            url: r.value.secure_url,
+            publicId: r.value.public_id,
+        }));
 
+    if (successfulUploads.length === 0) {
+        const firstError = results.find((r) => r.status === "rejected")?.reason;
+        throw new ApiError(500, firstError?.message || "Failed to upload images");
+    }
+
+    project.photos.push(...successfulUploads);
     await project.save();
 
     res.status(200).json({
         success: true,
-        message: "Photo uploaded and added to project successfully",
-        photo: {
-            url: result.secure_url,
-            publicId: result.public_id,
-        },
+        message: `${successfulUploads.length} photo${successfulUploads.length > 1 ? "s" : ""} uploaded and added to project successfully`,
+        photos: successfulUploads,
+        photo: successfulUploads[0],
         project,
     });
 });
