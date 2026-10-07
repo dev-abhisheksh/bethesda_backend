@@ -23,7 +23,7 @@ const allowedOrigins = [
   "https://bethesdademo.vercel.app",
   process.env.CLIENT_URL,
   "http://localhost:5173",
-  "https://bethesdatrust.org/",
+  "https://bethesdatrust.org",
   "http://localhost:3000",
 ].filter(Boolean);
 
