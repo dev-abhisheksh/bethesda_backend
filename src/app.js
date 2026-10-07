@@ -23,7 +23,7 @@ const allowedOrigins = [
   "https://bethesdademo.vercel.app",
   process.env.CLIENT_URL,
   "http://localhost:5173",
-  "http://localhost:5174",
+  "https://white-baboon-351982.hostingersite.com",
   "http://localhost:3000",
 ].filter(Boolean);
 

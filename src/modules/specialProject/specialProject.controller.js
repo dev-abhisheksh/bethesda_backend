@@ -72,12 +72,22 @@ const createSpecialProject = asyncHandler(async (req, res) => {
 // @desc    Update a special project (Admin only)
 // @route   PUT /api/special-projects/:id
 const updateSpecialProject = asyncHandler(async (req, res) => {
-    const project = await SpecialProject.findByIdAndUpdate(req.params.id, req.body, {
-        returnDocument: "after",
-        runValidators: true,
-    });
+    let project = await findProject(req.params.id);
+    if (!project && mongoose.Types.ObjectId.isValid(req.params.id)) {
+        project = await SpecialProject.findById(req.params.id);
+    }
 
     if (!project) throw new ApiError(404, "Special project not found");
+
+    const { title, slug, badge, description, order, isVisible } = req.body;
+    if (title !== undefined) project.title = title;
+    if (slug !== undefined) project.slug = slug;
+    if (badge !== undefined) project.badge = badge;
+    if (description !== undefined) project.description = description;
+    if (order !== undefined) project.order = order;
+    if (isVisible !== undefined) project.isVisible = isVisible;
+
+    await project.save();
 
     res.status(200).json({ success: true, project });
 });
